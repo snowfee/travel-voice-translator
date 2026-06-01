@@ -47,3 +47,10 @@ export function createHistoryStore() {
     remove,
   };
 }
+
+let sharedHistoryStore: ReturnType<typeof createHistoryStore> | undefined;
+
+export function useHistoryStore() {
+  sharedHistoryStore ??= createHistoryStore();
+  return sharedHistoryStore;
+}

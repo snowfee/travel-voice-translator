@@ -40,3 +40,10 @@ export function createSettingsStore() {
     update,
   };
 }
+
+let sharedSettingsStore: ReturnType<typeof createSettingsStore> | undefined;
+
+export function useSettingsStore() {
+  sharedSettingsStore ??= createSettingsStore();
+  return sharedSettingsStore;
+}

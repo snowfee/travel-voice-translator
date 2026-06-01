@@ -14,7 +14,7 @@ export interface TranslationRequest {
 
 export interface TranslationResult {
   translatedText: string;
-  confidence: 'local' | 'fallback';
+  confidence: 'local' | 'cloud' | 'fallback';
 }
 
 export interface TranslationRecord {

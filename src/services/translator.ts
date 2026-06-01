@@ -17,6 +17,32 @@ export async function translateText(request: TranslationRequest): Promise<Transl
     };
   }
 
+  try {
+    const response = await fetch('/api/translate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        sourceLanguage: request.sourceLanguage,
+        targetLanguage: request.targetLanguage,
+      }),
+    });
+
+    if (response.ok) {
+      const body = (await response.json()) as { translatedText?: string };
+      if (body.translatedText) {
+        return {
+          translatedText: body.translatedText,
+          confidence: 'cloud',
+        };
+      }
+    }
+  } catch {
+    // Preserve offline fallback behavior when the cloud service is unavailable.
+  }
+
   return {
     translatedText: `[${request.targetLanguage}] ${text}`,
     confidence: 'fallback',

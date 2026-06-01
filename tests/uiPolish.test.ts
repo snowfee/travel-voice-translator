@@ -1,12 +1,33 @@
 import { describe, expect, test } from 'vitest';
 
-import appSource from '../src/App.vue?raw';
+import appShellSource from '../src/App.vue?raw';
 
 // @ts-expect-error The app intentionally avoids @types/node; Vitest still runs in Node.
 const { readFileSync } = await import('node:fs');
 const cssSource = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8') as string;
+const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8') as string;
+const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8') as string;
+const conversationSource = readFileSync(new URL('../src/views/ConversationView.vue', import.meta.url), 'utf8') as string;
+const translateSource = readFileSync(new URL('../src/views/TranslateView.vue', import.meta.url), 'utf8') as string;
+const phrasesSource = readFileSync(new URL('../src/views/PhrasesView.vue', import.meta.url), 'utf8') as string;
+const historySource = readFileSync(new URL('../src/views/HistoryView.vue', import.meta.url), 'utf8') as string;
+const settingsSource = readFileSync(new URL('../src/views/SettingsView.vue', import.meta.url), 'utf8') as string;
+const conversationStoreSource = readFileSync(new URL('../src/stores/conversationStore.ts', import.meta.url), 'utf8') as string;
+const appSource = [appShellSource, conversationSource, translateSource, phrasesSource, historySource, settingsSource].join('\n');
 
 describe('UI polish regression checks', () => {
+  test('splits tools into routed pages under a shared shell', () => {
+    expect(appSource).toContain('RouterView');
+    expect(appSource).toContain('RouterLink');
+    expect(mainSource).toContain('.use(router)');
+    expect(routerSource).toContain("redirect: '/conversation'");
+    expect(routerSource).toContain("path: '/conversation'");
+    expect(routerSource).toContain("path: '/translate'");
+    expect(routerSource).toContain("path: '/phrases'");
+    expect(routerSource).toContain("path: '/history'");
+    expect(routerSource).toContain("path: '/settings'");
+  });
+
   test('uses the approved travel blue and orange theme tokens', () => {
     expect(cssSource).toContain('--primary: #0ea5e9');
     expect(cssSource).toContain('--accent: #f97316');
@@ -66,12 +87,11 @@ describe('UI polish regression checks', () => {
   });
 
   test('keeps conversation bubbles persistent and removes bubble meta labels', () => {
-    expect(appSource).toContain('conversationMessages');
-    expect(appSource).toContain('v-for="message in conversationMessages"');
-    expect(appSource).toContain('conversationRecords.value = [...conversationRecords.value, { ...saved, speaker }]');
-    expect(appSource).toContain('replayConversationMessage(message)');
-    expect(appSource).not.toContain('conversationRecords.value.unshift');
-    expect(appSource).not.toContain('class="speech-meta"');
+    expect(conversationSource).toContain('v-for="message in conversationStore.messages.value"');
+    expect(conversationSource).toContain('replayConversationMessage(message)');
+    expect(conversationStoreSource).toContain('records.value = [...records.value, { ...record, speaker, pending: false }]');
+    expect(conversationStoreSource).not.toContain('records.value.unshift');
+    expect(conversationSource).not.toContain('class="speech-meta"');
   });
 
   test('keeps phrase and language data readable', () => {

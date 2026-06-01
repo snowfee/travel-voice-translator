@@ -410,6 +410,20 @@ select,
   border-radius: 18px 18px 6px 18px;
 }
 
+.chat-bubble {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.chat-bubble.pending {
+  opacity: 0.78;
+}
+
+.voice-chip.active {
+  border-color: rgba(14, 165, 233, 0.58);
+  background: var(--sky-soft);
+  color: var(--primary-deep);
+}
+
 .speech-panel-target {
   background: linear-gradient(180deg, var(--primary), var(--primary-deep));
   color: #ffffff;
@@ -796,7 +810,7 @@ select,
   font-weight: 800;
 }
 
-.nav-drawer > button:not(.nav-drawer-head button) {
+.nav-drawer > a {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
@@ -809,19 +823,20 @@ select,
   padding: 7px 10px;
   box-shadow: none;
   text-align: left;
+  text-decoration: none;
 }
 
-.nav-drawer > button:hover {
+.nav-drawer > a:hover {
   background: var(--sky-soft);
   box-shadow: none;
 }
 
-.nav-drawer > button.active {
+.nav-drawer > a.active {
   background: var(--primary);
   color: #ffffff;
 }
 
-.nav-drawer > button span {
+.nav-drawer > a span {
   display: grid;
   place-items: center;
   width: 34px;
@@ -835,12 +850,12 @@ select,
   line-height: 1;
 }
 
-.nav-drawer > button.active span {
+.nav-drawer > a.active span {
   background: #ffffff;
   color: var(--primary-deep);
 }
 
-.nav-drawer > button strong {
+.nav-drawer > a strong {
   color: inherit;
   font-size: 1rem;
   font-weight: 900;
