@@ -54,6 +54,18 @@ function usePhrase(phrase: (typeof phrases)[number]) {
         <h2>常用短句</h2>
       </div>
     </div>
+    <label class="phrase-language-picker">
+      <span>目标语言</span>
+      <select v-model="selectedPhraseLanguage" aria-label="短句目标语言">
+        <option
+          v-for="language in languages"
+          :key="language.code"
+          :value="language.code"
+        >
+          {{ language.nativeName }}
+        </option>
+      </select>
+    </label>
     <div class="category-tabs" aria-label="短句分类">
       <button
         v-for="category in phraseCategories"
@@ -79,7 +91,9 @@ function usePhrase(phrase: (typeof phrases)[number]) {
         @click="usePhrase(phrase)"
       >
         <span>{{ phrase.sourceText }}</span>
-        <strong>{{ phrase.translations[settings.targetLanguage] }}</strong>
+        <strong>{{
+          getPhraseTranslation(phrase, selectedPhraseLanguage)
+        }}</strong>
       </button>
     </div>
   </section>

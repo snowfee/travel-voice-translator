@@ -1,8 +1,8 @@
 # Travel Voice Translator
 
-## Baidu General Translation API
+## Continuous Speech Recognition and Translation
 
-The default conversation mode uses browser speech recognition, Baidu General Translation API, and browser speech synthesis. Keep the Baidu APPID and secret key on the local server only.
+The default conversation mode uses the browser Web Speech API for continuous speech recognition, Baidu General Translation API for text translation, and browser speech synthesis for playback. Keep provider keys on the local server only.
 
 1. Create an application in the Baidu Translation Open Platform.
 2. Set the server environment variable:
@@ -45,6 +45,6 @@ npm run dev
 
 4. Open `http://localhost:5173/conversation`.
 
-Click `我说` to translate from the source language to the target language. Click `对方说` to reverse the direction. Click the active side or the microphone button again to stop the realtime session.
+Click `我说` to translate from the source language to the target language. Click `对方说` to reverse the direction. Click the active side or the microphone button again to stop the continuous recognition session.
 
 Optional server settings are listed in `.env.example`. The default realtime model is `gpt-realtime-mini`.
