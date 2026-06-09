@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterLink, RouterView, useRoute } from 'vue-router';
 
 import { languages } from '@/data/languages';
+import { useConversationHistoryStore } from '@/stores/conversationHistoryStore';
+import { useConversationStore } from '@/stores/conversationStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { LanguageCode } from '@/types/domain';
 
@@ -15,8 +17,11 @@ const tabs = [
 ];
 
 const isNavOpen = ref(false);
+const route = useRoute();
 const settingsStore = useSettingsStore();
 const settings = settingsStore.settings;
+const conversationStore = useConversationStore(settings);
+const conversationHistoryStore = useConversationHistoryStore();
 
 function updateSourceLanguage(value: string) {
   settingsStore.update({ sourceLanguage: value as LanguageCode });
@@ -33,6 +38,10 @@ function swapLanguages() {
     targetLanguage: sourceLanguage,
   });
 }
+
+function startNewConversation() {
+  conversationHistoryStore.archive(conversationStore.takeCurrentConversation());
+}
 </script>
 
 <template>
@@ -47,10 +56,10 @@ function swapLanguages() {
         <span class="eyebrow">Travel Voice Translator</span>
         <h1>旅言</h1>
       </div>
-      <span class="connection-pill">本地兜底</span>
+      <button v-if="route.path === '/conversation'" class="new-conversation-button" type="button" @click="startNewConversation">新对话</button>
     </header>
 
-    <section class="route-card" aria-label="语言方向">
+    <section v-if="route.path === '/conversation' || route.path === '/translate'" class="route-card" aria-label="语言方向">
       <label class="route-stop">
         <span>我说</span>
         <select :value="settings.sourceLanguage" @change="updateSourceLanguage(($event.target as HTMLSelectElement).value)">
@@ -77,7 +86,7 @@ function swapLanguages() {
       <div class="nav-drawer-head">
         <div>
           <span class="eyebrow">Menu</span>
-          <strong>旅行工具</strong>
+          <strong>旅言</strong>
         </div>
         <button type="button" aria-label="关闭主要导航" @click="isNavOpen = false">×</button>
       </div>

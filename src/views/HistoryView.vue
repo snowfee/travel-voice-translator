@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { getLanguageName } from '@/data/languages';
-import { speak } from '@/services/speech';
-import { useHistoryStore } from '@/stores/historyStore';
-import { useSettingsStore } from '@/stores/settingsStore';
-import type { TranslationRecord } from '@/types/domain';
+import { useConversationHistoryStore } from '@/stores/conversationHistoryStore';
 
-const historyStore = useHistoryStore();
-const settings = useSettingsStore().settings;
+const conversationHistoryStore = useConversationHistoryStore();
 
-function replayRecord(record: TranslationRecord) {
-  speak(record.translatedText, record.targetLanguage, settings.value.speechRate);
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
 }
 </script>
 
@@ -21,15 +22,22 @@ function replayRecord(record: TranslationRecord) {
         <h2>历史</h2>
       </div>
     </div>
-    <article v-for="record in historyStore.records.value" :key="record.id" class="history-card">
-      <span>{{ getLanguageName(record.sourceLanguage) }} -> {{ getLanguageName(record.targetLanguage) }}</span>
-      <p>{{ record.sourceText }}</p>
-      <strong>{{ record.translatedText }}</strong>
-      <div>
-        <button type="button" @click="replayRecord(record)">播放</button>
-        <button type="button" @click="historyStore.remove(record.id)">删除</button>
+    <article v-for="session in conversationHistoryStore.sessions.value" :key="session.id" class="history-card session-card">
+      <div class="session-summary">
+        <span>{{ formatTime(session.endedAt) }} · {{ session.messages.length }} 条对话</span>
+        <button type="button" @click="conversationHistoryStore.remove(session.id)">删除</button>
       </div>
+      <details>
+        <summary>查看本轮对话</summary>
+        <div class="session-messages">
+          <article v-for="message in session.messages" :key="message.id" class="session-message">
+            <span>{{ getLanguageName(message.sourceLanguage) }} -> {{ getLanguageName(message.targetLanguage) }}</span>
+            <p>{{ message.sourceText }}</p>
+            <strong>{{ message.translatedText }}</strong>
+          </article>
+        </div>
+      </details>
     </article>
-    <p v-if="historyStore.records.value.length === 0" class="empty-state">暂无历史记录。</p>
+    <p v-if="conversationHistoryStore.sessions.value.length === 0" class="empty-state">暂无对话记录。</p>
   </section>
 </template>

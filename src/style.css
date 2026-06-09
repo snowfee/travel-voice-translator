@@ -172,7 +172,8 @@ select,
   text-transform: uppercase;
 }
 
-.connection-pill {
+.connection-pill,
+.new-conversation-button {
   flex: 0 0 auto;
   border: 1px solid rgba(249, 115, 22, 0.22);
   border-radius: 999px;
@@ -182,6 +183,13 @@ select,
   font-weight: 900;
   line-height: 1;
   padding: 9px 10px;
+}
+
+.new-conversation-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-weight: 900;
+  box-shadow: none;
 }
 
 .nav-toggle {
@@ -662,6 +670,39 @@ select,
   line-height: 1.5;
 }
 
+.session-summary {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.session-summary button {
+  border-color: rgba(182, 66, 50, 0.35);
+  color: var(--danger);
+}
+
+.session-card details {
+  color: var(--primary-deep);
+}
+
+.session-card summary {
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.session-messages {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.session-message {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border-left: 3px solid var(--primary);
+  background: var(--sky-soft);
+}
+
 .history-card strong {
   color: var(--primary-deep);
   font-weight: 900;
@@ -896,7 +937,8 @@ select,
     min-height: 44px;
   }
 
-  .connection-pill {
+  .connection-pill,
+  .new-conversation-button {
     padding-inline: 8px;
   }
 

@@ -43,4 +43,23 @@ describe('conversation store', () => {
       pending: false,
     });
   });
+
+  test('archives real messages and starts a blank conversation', () => {
+    const store = createConversationStore(settings);
+
+    store.append(
+      {
+        id: 'record-1',
+        sourceText: '你好',
+        translatedText: 'Hello',
+        sourceLanguage: 'zh-CN',
+        targetLanguage: 'en-US',
+        createdAt: '2026-06-02T00:00:00.000Z',
+      },
+      'source',
+    );
+
+    expect(store.takeCurrentConversation()).toHaveLength(1);
+    expect(store.messages.value).toHaveLength(0);
+  });
 });

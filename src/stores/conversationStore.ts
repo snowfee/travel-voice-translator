@@ -8,9 +8,14 @@ export type ConversationMessage = TranslationRecord & { speaker: Speaker; pendin
 export function createConversationStore(settings: Ref<AppSettings>) {
   const records = ref<ConversationMessage[]>([]);
   const draft = ref<ConversationMessage | null>(null);
+  const hasStarted = ref(false);
   const messages = computed<ConversationMessage[]>(() => {
     if (records.value.length > 0 || draft.value) {
       return draft.value ? [...records.value, draft.value] : records.value;
+    }
+
+    if (hasStarted.value) {
+      return [];
     }
 
     return [
@@ -36,10 +41,12 @@ export function createConversationStore(settings: Ref<AppSettings>) {
   });
 
   function append(record: TranslationRecord, speaker: Speaker) {
+    hasStarted.value = true;
     records.value = [...records.value, { ...record, speaker, pending: false }];
   }
 
   function startDraft(speaker: Speaker) {
+    hasStarted.value = true;
     draft.value = {
       id: 'realtime-draft',
       speaker,
@@ -74,6 +81,14 @@ export function createConversationStore(settings: Ref<AppSettings>) {
     draft.value = null;
   }
 
+  function takeCurrentConversation() {
+    const completedRecords = records.value;
+    records.value = [];
+    draft.value = null;
+    hasStarted.value = true;
+    return completedRecords;
+  }
+
   return {
     messages,
     append,
@@ -82,6 +97,7 @@ export function createConversationStore(settings: Ref<AppSettings>) {
     updateDraftTranslation,
     commitDraft,
     cancelDraft,
+    takeCurrentConversation,
   };
 }
 
