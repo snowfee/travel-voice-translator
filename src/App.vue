@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { RouterLink, RouterView, useRoute } from 'vue-router';
 
+import LanguagePicker from '@/components/LanguagePicker.vue';
 import { languages } from '@/data/languages';
 import { useConversationHistoryStore } from '@/stores/conversationHistoryStore';
 import { useConversationStore } from '@/stores/conversationStore';
@@ -16,8 +17,19 @@ const tabs = [
   { path: '/settings', label: '设置', shortLabel: '设' },
 ];
 
+const pageTitles: Record<string, { eyebrow: string; title: string }> = {
+  '/conversation': { eyebrow: 'Travel Voice Translator', title: '旅言' },
+  '/translate': { eyebrow: 'Text Mode', title: '文本翻译' },
+  '/phrases': { eyebrow: 'Travel Scenarios', title: '常用短句' },
+  '/history': { eyebrow: 'Recent Lines', title: '历史' },
+  '/settings': { eyebrow: 'Preferences', title: '设置' },
+};
+
 const isNavOpen = ref(false);
+const languagePickerTarget = ref<'source' | 'target' | null>(null);
 const route = useRoute();
+const isHistoryDetailRoute = computed(() => route.path.startsWith('/history/'));
+const pageTitle = computed(() => pageTitles[route.path] ?? pageTitles['/conversation']);
 const settingsStore = useSettingsStore();
 const settings = settingsStore.settings;
 const conversationStore = useConversationStore(settings);
@@ -29,6 +41,26 @@ function updateSourceLanguage(value: string) {
 
 function updateTargetLanguage(value: string) {
   settingsStore.update({ targetLanguage: value as LanguageCode });
+}
+
+function openLanguagePicker(target: 'source' | 'target') {
+  languagePickerTarget.value = target;
+}
+
+function closeLanguagePicker() {
+  languagePickerTarget.value = null;
+}
+
+function selectLanguage(value: string) {
+  if (languagePickerTarget.value === 'source') {
+    updateSourceLanguage(value);
+  }
+
+  if (languagePickerTarget.value === 'target') {
+    updateTargetLanguage(value);
+  }
+
+  closeLanguagePicker();
 }
 
 function swapLanguages() {
@@ -45,36 +77,36 @@ function startNewConversation() {
 </script>
 
 <template>
-  <main class="travel-console">
-    <header class="app-hero">
+  <main class="travel-console" :class="{ 'travel-console-detail': isHistoryDetailRoute }">
+    <header v-if="!isHistoryDetailRoute" class="app-hero">
       <button class="nav-toggle" type="button" aria-label="打开主要导航" @click="isNavOpen = true">
         <span></span>
         <span></span>
         <span></span>
       </button>
       <div>
-        <span class="eyebrow">Travel Voice Translator</span>
-        <h1>旅言</h1>
+        <span class="eyebrow font-bold">{{ pageTitle.eyebrow }}</span>
+        <h1 class="font-bold">{{ pageTitle.title }}</h1>
       </div>
-      <button v-if="route.path === '/conversation'" class="new-conversation-button" type="button" @click="startNewConversation">新对话</button>
+      <button v-if="route.path === '/conversation'" class="new-conversation-button font-medium" type="button" @click="startNewConversation">新对话</button>
     </header>
 
     <section v-if="route.path === '/conversation' || route.path === '/translate'" class="route-card" aria-label="语言方向">
-      <label class="route-stop">
-        <span>我说</span>
-        <select :value="settings.sourceLanguage" @change="updateSourceLanguage(($event.target as HTMLSelectElement).value)">
-          <option v-for="language in languages" :key="language.code" :value="language.code">{{ language.nativeName }}</option>
-        </select>
-      </label>
+      <div class="route-stop">
+        <span class="font-medium">我说</span>
+        <button class="route-stop-trigger font-medium" type="button" @click="openLanguagePicker('source')">
+          {{ languages.find((language) => language.code === settings.sourceLanguage)?.nativeName ?? settings.sourceLanguage }}
+        </button>
+      </div>
       <button class="swap-button" type="button" aria-label="交换语言" @click="swapLanguages">
         <span></span>
       </button>
-      <label class="route-stop">
-        <span>对方说</span>
-        <select :value="settings.targetLanguage" @change="updateTargetLanguage(($event.target as HTMLSelectElement).value)">
-          <option v-for="language in languages" :key="language.code" :value="language.code">{{ language.nativeName }}</option>
-        </select>
-      </label>
+      <div class="route-stop">
+        <span class="font-medium">对方说</span>
+        <button class="route-stop-trigger font-medium" type="button" @click="openLanguagePicker('target')">
+          {{ languages.find((language) => language.code === settings.targetLanguage)?.nativeName ?? settings.targetLanguage }}
+        </button>
+      </div>
     </section>
 
     <section class="content-deck">
@@ -85,15 +117,22 @@ function startNewConversation() {
     <nav class="nav-drawer" :class="{ open: isNavOpen }" aria-label="主要导航">
       <div class="nav-drawer-head">
         <div>
-          <span class="eyebrow">Menu</span>
-          <strong>旅言</strong>
+          <span class="eyebrow font-bold">Menu</span>
+          <strong class="font-medium">旅言</strong>
         </div>
         <button type="button" aria-label="关闭主要导航" @click="isNavOpen = false">×</button>
       </div>
       <RouterLink v-for="tab in tabs" :key="tab.path" :to="tab.path" active-class="active" @click="isNavOpen = false">
-        <span>{{ tab.shortLabel }}</span>
-        <strong>{{ tab.label }}</strong>
+        <span class="font-medium">{{ tab.shortLabel }}</span>
+        <strong class="font-medium">{{ tab.label }}</strong>
       </RouterLink>
     </nav>
+    <LanguagePicker
+      :open="languagePickerTarget !== null"
+      :title="languagePickerTarget === 'source' ? '选择我说的语言' : '选择对方语言'"
+      :model-value="languagePickerTarget === 'source' ? settings.sourceLanguage : settings.targetLanguage"
+      @close="closeLanguagePicker"
+      @select="selectLanguage"
+    />
   </main>
 </template>

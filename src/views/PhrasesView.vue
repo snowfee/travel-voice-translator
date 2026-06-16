@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import { languages } from "@/data/languages";
 import { phraseCategories, phrases } from "@/data/phrases";
+import { createPhraseRecord, getPhraseTranslation } from "@/services/phrases";
 import { speak } from "@/services/speech";
 import { useHistoryStore } from "@/stores/historyStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -9,6 +11,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 const historyStore = useHistoryStore();
 const settings = useSettingsStore().settings;
 const selectedCategory = ref(phraseCategories[0]);
+const selectedPhraseLanguage = ref(settings.value.targetLanguage);
 const phraseQuery = ref("");
 
 const filteredPhrases = computed(() => {
@@ -25,21 +28,16 @@ const filteredPhrases = computed(() => {
   });
 });
 
+const hasFilteredPhrases = computed(() => filteredPhrases.value.length > 0);
+
 function usePhrase(phrase: (typeof phrases)[number]) {
-  const translatedText =
-    phrase.translations[settings.value.targetLanguage] ??
-    `[${settings.value.targetLanguage}] ${phrase.sourceText}`;
-  historyStore.add({
-    sourceText: phrase.sourceText,
-    translatedText,
-    sourceLanguage: "zh-CN",
-    targetLanguage: settings.value.targetLanguage,
-  });
+  const record = createPhraseRecord(phrase, selectedPhraseLanguage.value);
+  historyStore.add(record);
 
   if (settings.value.autoPlay) {
     speak(
-      translatedText,
-      settings.value.targetLanguage,
+      record.translatedText,
+      selectedPhraseLanguage.value,
       settings.value.speechRate,
     );
   }
@@ -48,12 +46,6 @@ function usePhrase(phrase: (typeof phrases)[number]) {
 
 <template>
   <section class="tool-panel phrases-panel">
-    <div class="panel-title">
-      <div>
-        <span class="eyebrow">Travel Scenarios</span>
-        <h2>常用短句</h2>
-      </div>
-    </div>
     <label class="phrase-language-picker">
       <span>目标语言</span>
       <select v-model="selectedPhraseLanguage" aria-label="短句目标语言">
@@ -96,5 +88,6 @@ function usePhrase(phrase: (typeof phrases)[number]) {
         }}</strong>
       </button>
     </div>
+    <p v-if="!hasFilteredPhrases" class="empty-state">没有找到匹配短句。</p>
   </section>
 </template>

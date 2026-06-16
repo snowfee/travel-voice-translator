@@ -1,24 +1,46 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { speak } from '@/services/speech';
 import { translateText } from '@/services/translator';
 import { useHistoryStore } from '@/stores/historyStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { LanguageCode } from '@/types/domain';
 
+const route = useRoute();
 const historyStore = useHistoryStore();
 const settingsStore = useSettingsStore();
 const settings = settingsStore.settings;
 const inputText = ref('你好，请问地铁站怎么走？');
 const translatedText = ref('How do I get to the subway station?');
+const translateStatus = ref('');
 
-function swapLanguages() {
-  const sourceLanguage = settings.value.sourceLanguage;
+function loadHistoryRecord(historyId: string) {
+  const record = historyStore.records.value.find((item) => item.id === historyId);
+  if (!record) {
+    translateStatus.value = '没有找到这条历史翻译';
+    return;
+  }
+
   settingsStore.update({
-    sourceLanguage: settings.value.targetLanguage,
-    targetLanguage: sourceLanguage,
+    sourceLanguage: record.sourceLanguage as LanguageCode,
+    targetLanguage: record.targetLanguage as LanguageCode,
   });
+  inputText.value = record.sourceText;
+  translatedText.value = record.translatedText;
+  translateStatus.value = '已载入历史翻译';
 }
+
+watch(
+  () => route.query.historyId,
+  (historyId) => {
+    if (typeof historyId === 'string') {
+      loadHistoryRecord(historyId);
+    }
+  },
+  { immediate: true },
+);
 
 async function runTranslation() {
   const text = inputText.value.trim();
@@ -26,6 +48,7 @@ async function runTranslation() {
     return;
   }
 
+  translateStatus.value = '正在翻译...';
   const result = await translateText({
     text,
     sourceLanguage: settings.value.sourceLanguage,
@@ -38,6 +61,7 @@ async function runTranslation() {
     sourceLanguage: settings.value.sourceLanguage,
     targetLanguage: settings.value.targetLanguage,
   });
+  translateStatus.value = '翻译完成';
 }
 
 function play() {
@@ -47,26 +71,21 @@ function play() {
 function clearCurrent() {
   inputText.value = '';
   translatedText.value = '';
+  translateStatus.value = '';
 }
 </script>
 
 <template>
   <section class="tool-panel translate-panel">
-    <div class="panel-title">
-      <div>
-        <span class="eyebrow">Text Mode</span>
-        <h2>文本翻译</h2>
-      </div>
-      <button type="button" @click="swapLanguages">交换语言</button>
-    </div>
+    <p v-if="translateStatus" class="translate-status font-medium" aria-live="polite">{{ translateStatus }}</p>
     <label class="input-card">
       <span>输入内容</span>
       <textarea v-model="inputText" rows="7" placeholder="输入或录入一句旅行用语"></textarea>
     </label>
     <div class="translate-actions">
-      <button class="primary-action" type="button" @click="runTranslation">翻译</button>
-      <button type="button" @click="play">播放</button>
-      <button type="button" @click="clearCurrent">清空</button>
+      <button class="primary-action font-medium" type="button" @click="runTranslation">翻译</button>
+      <button class="font-medium" type="button" @click="play">播放</button>
+      <button class="font-medium" type="button" @click="clearCurrent">清空</button>
     </div>
     <article class="result-card">
       <span>译文</span>

@@ -1,7 +1,9 @@
-export type LanguageCode = 'zh-CN' | 'en-US' | 'ja-JP' | 'ko-KR' | 'fr-FR' | 'es-ES';
+export type LanguageCode = string;
 
 export interface Language {
   code: LanguageCode;
+  baiduCode?: string;
+  speechCode?: string;
   name: string;
   nativeName: string;
 }

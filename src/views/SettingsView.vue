@@ -17,12 +17,6 @@ function updateTargetLanguage(value: string) {
 
 <template>
   <section class="tool-panel settings-panel">
-    <div class="panel-title">
-      <div>
-        <span class="eyebrow">Preferences</span>
-        <h2>设置</h2>
-      </div>
-    </div>
     <label class="setting-row">
       <span>默认源语言</span>
       <select :value="settings.sourceLanguage" @change="updateSourceLanguage(($event.target as HTMLSelectElement).value)">

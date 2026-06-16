@@ -17,4 +17,11 @@ describe('Baidu translation helper', () => {
       salt: 'salt',
     });
   });
+
+  test('passes through supported Baidu language codes from the language picker', () => {
+    expect(createBaiduRequest('app-id', 'secret', 'hello', 'en', 'vie', 'salt')).toMatchObject({
+      from: 'en',
+      to: 'vie',
+    });
+  });
 });

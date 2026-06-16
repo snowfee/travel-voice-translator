@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import ConversationView from '@/views/ConversationView.vue';
+import HistoryDetailView from '@/views/HistoryDetailView.vue';
 import HistoryView from '@/views/HistoryView.vue';
 import PhrasesView from '@/views/PhrasesView.vue';
 import SettingsView from '@/views/SettingsView.vue';
@@ -14,6 +15,7 @@ const router = createRouter({
     { path: '/translate', component: TranslateView },
     { path: '/phrases', component: PhrasesView },
     { path: '/history', component: HistoryView },
+    { path: '/history/:id', component: HistoryDetailView },
     { path: '/settings', component: SettingsView },
   ],
 });
