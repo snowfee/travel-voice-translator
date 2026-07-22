@@ -8,8 +8,8 @@ The default conversation mode uses the browser Web Speech API for continuous spe
 2. Set the server environment variable:
 
 ```powershell
-$env:BAIDU_TRANSLATE_APP_ID = "..."
-$env:BAIDU_TRANSLATE_SECRET_KEY = "..."
+$env:BAIDU_TRANSLATE_APP_ID = "your_baidu_app_id"
+$env:BAIDU_TRANSLATE_SECRET_KEY = "your_baidu_secret_key"
 ```
 
 3. Start the API server and Vue app:
